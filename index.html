@@ -17,7 +17,10 @@
       --danger: #ff3b30;
       --warning: #ff9f0a;
       --success: #34c759;
-      --shadow: 0 14px 40px rgba(0, 0, 0, 0.07);
+      --shadow: 0 18px 48px rgba(31, 35, 48, 0.10);
+      --soft-blue: #eaf3ff;
+      --soft-purple: #f1ecff;
+      --soft-pink: #fff0f5;
     }
 
     body.dark {
@@ -28,7 +31,10 @@
       --muted: #a1a1a6;
       --line: rgba(255, 255, 255, 0.1);
       --accent: #0a84ff;
-      --shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+      --shadow: 0 18px 48px rgba(0, 0, 0, 0.42);
+      --soft-blue: rgba(10,132,255,.14);
+      --soft-purple: rgba(175,82,222,.14);
+      --soft-pink: rgba(255,55,95,.12);
     }
 
     * { box-sizing: border-box; }
@@ -37,8 +43,13 @@
       margin: 0;
       min-height: 100vh;
       background:
-        radial-gradient(circle at top left, rgba(0,113,227,.08), transparent 32%),
+        radial-gradient(circle at 10% 10%, rgba(95, 145, 255, .18), transparent 30%),
+        radial-gradient(circle at 88% 18%, rgba(175, 82, 222, .14), transparent 28%),
+        radial-gradient(circle at 70% 92%, rgba(255, 99, 132, .12), transparent 26%),
+        linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px),
         var(--bg);
+      background-size: auto, auto, auto, 28px 28px, 28px 28px, auto;
       color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
       transition: background .2s ease, color .2s ease;
@@ -58,6 +69,20 @@
       justify-content: space-between;
       gap: 16px;
       margin-bottom: 28px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 11px;
+      margin-bottom: 12px;
+      border-radius: 999px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+      backdrop-filter: blur(14px);
     }
 
     h1 {
@@ -90,7 +115,8 @@
       transition: transform .18s ease, opacity .18s ease, background .18s ease;
     }
 
-    .btn:hover { transform: translateY(-1px); }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(0,0,0,.09); }
+    .btn:active { transform: translateY(0) scale(.98); }
     .btn.primary { background: var(--accent); color: white; border-color: transparent; }
     .btn.danger { color: white; background: var(--danger); border-color: transparent; }
 
@@ -109,7 +135,25 @@
       backdrop-filter: blur(18px);
     }
 
-    .summary-card { padding: 20px; }
+    .summary-card {
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .summary-card::after {
+      content: '';
+      position: absolute;
+      width: 110px;
+      height: 110px;
+      right: -42px;
+      top: -46px;
+      border-radius: 50%;
+      background: var(--summary-tint, var(--soft-blue));
+      filter: blur(2px);
+    }
+    .summary-card:hover { transform: translateY(-3px); }
+    .summary-icon { font-size: 20px; margin-bottom: 16px; position: relative; z-index: 1; }
     .summary-card small { color: var(--muted); }
     .summary-card strong {
       display: block;
@@ -126,11 +170,39 @@
 
     .card {
       padding: 22px;
+      overflow: hidden;
       position: relative;
       min-height: 280px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 6px;
+      background: linear-gradient(90deg, var(--card-accent, #5b8cff), var(--card-accent-2, #9d6cff));
+    }
+
+    .card::after {
+      content: '';
+      position: absolute;
+      width: 170px;
+      height: 170px;
+      right: -76px;
+      top: -82px;
+      border-radius: 50%;
+      background: color-mix(in srgb, var(--card-accent, #5b8cff) 18%, transparent);
+      pointer-events: none;
+    }
+
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 24px 56px rgba(31, 35, 48, .14);
+      border-color: color-mix(in srgb, var(--card-accent, #5b8cff) 38%, var(--line));
     }
 
     .card-top {
@@ -152,7 +224,7 @@
       border-radius: 16px;
       display: grid;
       place-items: center;
-      background: var(--panel);
+      background: linear-gradient(145deg, color-mix(in srgb, var(--card-accent, #5b8cff) 24%, var(--panel)), var(--panel));
       font-size: 26px;
       border: 1px solid var(--line);
     }
@@ -165,6 +237,10 @@
       font-weight: 700;
       letter-spacing: -1.7px;
       margin-top: 6px;
+      background: linear-gradient(120deg, var(--text), color-mix(in srgb, var(--card-accent, #5b8cff) 72%, var(--text)));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
     }
 
     .details {
@@ -191,9 +267,9 @@
       border: 1px solid var(--line);
     }
 
-    .status.warning { color: var(--warning); }
-    .status.danger { color: var(--danger); }
-    .status.success { color: var(--success); }
+    .status.warning { color: var(--warning); background: color-mix(in srgb, var(--warning) 10%, var(--panel)); }
+    .status.danger { color: var(--danger); background: color-mix(in srgb, var(--danger) 10%, var(--panel)); }
+    .status.success { color: var(--success); background: color-mix(in srgb, var(--success) 10%, var(--panel)); }
 
     .icon-btn {
       border: 0;
@@ -309,6 +385,7 @@
   <main class="container">
     <header>
       <div>
+        <div class="eyebrow">✦ REWARD WALLET</div>
         <h1>积分兑换管理</h1>
         <div class="subtitle">集中管理不同平台的积分余额与失效时间</div>
       </div>
@@ -319,9 +396,9 @@
     </header>
 
     <section class="summary">
-      <div class="summary-card"><small>积分渠道</small><strong id="channelCount">0</strong></div>
-      <div class="summary-card"><small>录入总价值</small><strong id="totalValue">¥0</strong></div>
-      <div class="summary-card"><small>30 天内失效</small><strong id="expiringCount">0</strong></div>
+      <div class="summary-card" style="--summary-tint:var(--soft-blue)"><div class="summary-icon">🪙</div><small>积分渠道</small><strong id="channelCount">0</strong></div>
+      <div class="summary-card" style="--summary-tint:var(--soft-purple)"><div class="summary-icon">📊</div><small>积分余额合计</small><strong id="totalPoints">0</strong></div>
+      <div class="summary-card" style="--summary-tint:var(--soft-pink)"><div class="summary-icon">⏳</div><small>30 天内失效</small><strong id="expiringCount">0</strong></div>
     </section>
 
     <section id="content"></section>
@@ -349,10 +426,6 @@
             <textarea id="redemptionContent" required placeholder="例如：200 元京东 E 卡"></textarea>
           </div>
           <div class="field">
-            <label for="monetaryValue">对应金额（元）</label>
-            <input id="monetaryValue" required type="number" min="0" step="0.01" placeholder="例如：200" />
-          </div>
-          <div class="field">
             <label for="expirationDate">失效时间</label>
             <input id="expirationDate" type="date" />
           </div>
@@ -370,6 +443,11 @@
     const STORAGE_KEY = 'points-redemption-tracker-v1';
     const THEME_KEY = 'points-redemption-theme';
     const emojis = ['🪙','🎟️','💳','✈️','☕️','🛍️','🎁','🏨','🚆','🍎','🌟','🐳','🎮','📚','🍀','🧧'];
+    const cardPalettes = [
+      ['#5b8cff','#8f6cff'], ['#ff7a8a','#ffb36b'], ['#2ebf91','#6dd5ed'],
+      ['#8a6cff','#d56bff'], ['#ff9f43','#ffd166'], ['#3a86ff','#72ddf7'],
+      ['#ff5d8f','#c77dff'], ['#00b4d8','#48cae4']
+    ];
 
     let items = loadItems();
     let editingId = null;
@@ -385,7 +463,6 @@
       platformName: document.getElementById('platformName'),
       pointsBalance: document.getElementById('pointsBalance'),
       redemptionContent: document.getElementById('redemptionContent'),
-      monetaryValue: document.getElementById('monetaryValue'),
       expirationDate: document.getElementById('expirationDate')
     };
 
@@ -403,11 +480,10 @@
         platformName: fields.platformName.value.trim(),
         pointsBalance: Number(fields.pointsBalance.value),
         redemptionContent: fields.redemptionContent.value.trim(),
-        monetaryValue: Number(fields.monetaryValue.value),
         expirationDate: fields.expirationDate.value
       };
 
-      if (!data.platformName || !data.redemptionContent || data.pointsBalance < 0 || data.monetaryValue < 0) return;
+      if (!data.platformName || !data.redemptionContent || data.pointsBalance < 0) return;
 
       if (editingId) {
         items = items.map(item => item.id === editingId ? { ...item, ...data, updatedAt: new Date().toISOString() } : item);
@@ -444,7 +520,6 @@
       fields.platformName.value = item?.platformName || '';
       fields.pointsBalance.value = item?.pointsBalance ?? '';
       fields.redemptionContent.value = item?.redemptionContent || '';
-      fields.monetaryValue.value = item?.monetaryValue ?? '';
       fields.expirationDate.value = item?.expirationDate || '';
       dialog.showModal();
     }
@@ -470,6 +545,12 @@
       render();
     }
 
+
+    function getPalette(item) {
+      const seed = String(item.id || item.platformName || '').split('').reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
+      return cardPalettes[seed % cardPalettes.length];
+    }
+
     function render() {
       updateSummary();
 
@@ -481,12 +562,12 @@
       content.innerHTML = `<div class="grid">${items.map(item => {
         const status = getExpirationStatus(item.expirationDate);
         return `
-          <article class="card">
+          ${(() => { const [a,b] = getPalette(item); return `<article class="card" style="--card-accent:${a};--card-accent-2:${b}">`; })()}
             <div>
               <div class="card-top">
                 <div class="platform">
                   <div class="emoji">${item.emoji}</div>
-                  <div class="platform-name">${escapeHtml(item.platformName)}</div>
+                  <div><div class="platform-name">${escapeHtml(item.platformName)}</div><div style="margin-top:4px;color:var(--muted);font-size:12px">积分账户</div></div>
                 </div>
                 <button class="icon-btn menu-toggle" onclick="toggleMenu('${item.id}', event)" aria-label="打开菜单">•••</button>
                 <div class="menu ${openMenuId === item.id ? 'show' : ''}">
@@ -502,7 +583,6 @@
             <div>
               <div class="details">
                 <div>兑换内容：<b>${escapeHtml(item.redemptionContent)}</b></div>
-                <div>对应金额：<b>${formatCurrency(item.monetaryValue)}</b></div>
                 <div>失效时间：<b>${item.expirationDate || '未设置'}</b></div>
               </div>
               <div class="status ${status.className}">${status.label}</div>
@@ -514,7 +594,7 @@
 
     function updateSummary() {
       document.getElementById('channelCount').textContent = items.length;
-      document.getElementById('totalValue').textContent = formatCurrency(items.reduce((sum, item) => sum + Number(item.monetaryValue || 0), 0));
+      document.getElementById('totalPoints').textContent = formatNumber(items.reduce((sum, item) => sum + Number(item.pointsBalance || 0), 0));
       document.getElementById('expiringCount').textContent = items.filter(item => {
         const days = daysUntil(item.expirationDate);
         return days !== null && days >= 0 && days <= 30;
@@ -538,9 +618,6 @@
       return Math.ceil((target - today) / 86400000);
     }
 
-    function formatCurrency(value) {
-      return new Intl.NumberFormat('zh-CN', { style: 'currency', currency: 'CNY', maximumFractionDigits: 2 }).format(Number(value || 0));
-    }
 
     function formatNumber(value) {
       return new Intl.NumberFormat('zh-CN').format(Number(value || 0));
