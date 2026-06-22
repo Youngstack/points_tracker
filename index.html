@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light dark" />
+  <title>积分兑换管理</title>
+  <style>
+    :root {
+      --bg: #f5f5f7;
+      --card: rgba(255, 255, 255, 0.82);
+      --panel: rgba(255, 255, 255, 0.72);
+      --text: #1d1d1f;
+      --muted: #6e6e73;
+      --line: rgba(0, 0, 0, 0.08);
+      --accent: #0071e3;
+      --danger: #ff3b30;
+      --warning: #ff9f0a;
+      --success: #34c759;
+      --shadow: 0 14px 40px rgba(0, 0, 0, 0.07);
+    }
+
+    body.dark {
+      --bg: #000;
+      --card: rgba(28, 28, 30, 0.86);
+      --panel: rgba(28, 28, 30, 0.72);
+      --text: #f5f5f7;
+      --muted: #a1a1a6;
+      --line: rgba(255, 255, 255, 0.1);
+      --accent: #0a84ff;
+      --shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, rgba(0,113,227,.08), transparent 32%),
+        var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+      transition: background .2s ease, color .2s ease;
+    }
+
+    button, input, textarea { font: inherit; }
+
+    .container {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px 0 64px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(30px, 4vw, 48px);
+      letter-spacing: -1.4px;
+    }
+
+    .subtitle {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 999px;
+      padding: 11px 17px;
+      cursor: pointer;
+      color: var(--text);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      backdrop-filter: blur(16px);
+      transition: transform .18s ease, opacity .18s ease, background .18s ease;
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+    .btn.primary { background: var(--accent); color: white; border-color: transparent; }
+    .btn.danger { color: white; background: var(--danger); border-color: transparent; }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .summary-card, .card, .empty {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .summary-card { padding: 20px; }
+    .summary-card small { color: var(--muted); }
+    .summary-card strong {
+      display: block;
+      margin-top: 8px;
+      font-size: 28px;
+      letter-spacing: -0.8px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      padding: 22px;
+      position: relative;
+      min-height: 280px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .platform {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .emoji {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      background: var(--panel);
+      font-size: 26px;
+      border: 1px solid var(--line);
+    }
+
+    .platform-name { font-weight: 650; font-size: 18px; }
+    .balance-label { color: var(--muted); margin-top: 28px; font-size: 13px; }
+    .balance {
+      font-size: 46px;
+      line-height: 1;
+      font-weight: 700;
+      letter-spacing: -1.7px;
+      margin-top: 6px;
+    }
+
+    .details {
+      margin-top: 24px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+      display: grid;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .details b { color: var(--text); font-weight: 600; }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      margin-top: 12px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+    }
+
+    .status.warning { color: var(--warning); }
+    .status.danger { color: var(--danger); }
+    .status.success { color: var(--success); }
+
+    .icon-btn {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 22px;
+      padding: 4px 6px;
+    }
+
+    .menu {
+      position: absolute;
+      right: 18px;
+      top: 52px;
+      z-index: 3;
+      display: none;
+      min-width: 120px;
+      padding: 8px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .menu.show { display: block; }
+    .menu button {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 10px;
+      text-align: left;
+      cursor: pointer;
+    }
+    .menu button:hover { background: var(--panel); }
+    .menu .delete { color: var(--danger); }
+
+    .empty {
+      padding: 64px 24px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    dialog {
+      width: min(560px, calc(100% - 28px));
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      background: var(--card);
+      color: var(--text);
+      padding: 0;
+      box-shadow: 0 24px 80px rgba(0,0,0,.22);
+      backdrop-filter: blur(24px);
+    }
+
+    dialog::backdrop { background: rgba(0,0,0,.34); backdrop-filter: blur(3px); }
+
+    .modal-inner { padding: 24px; }
+    .modal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .modal-head h2 { margin: 0; font-size: 24px; }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .field { display: grid; gap: 7px; }
+    .field.full { grid-column: 1 / -1; }
+    label { font-size: 13px; color: var(--muted); }
+
+    input, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px 13px;
+      color: var(--text);
+      background: var(--panel);
+      outline: none;
+    }
+    input:focus, textarea:focus { border-color: var(--accent); }
+    textarea { min-height: 90px; resize: vertical; }
+
+    .modal-actions {
+      margin-top: 20px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 680px) {
+      .container { width: min(100% - 20px, 1180px); padding-top: 20px; }
+      header { align-items: flex-start; flex-direction: column; }
+      .summary, .grid { grid-template-columns: 1fr; }
+      .form-grid { grid-template-columns: 1fr; }
+      .field.full { grid-column: auto; }
+      .header-actions { width: 100%; }
+      .header-actions .btn { flex: 1; }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <header>
+      <div>
+        <h1>积分兑换管理</h1>
+        <div class="subtitle">集中管理不同平台的积分余额与失效时间</div>
+      </div>
+      <div class="header-actions">
+        <button class="btn" id="themeBtn" aria-label="切换日间夜间模式">🌙 夜间</button>
+        <button class="btn primary" id="addBtn">＋ 新增渠道</button>
+      </div>
+    </header>
+
+    <section class="summary">
+      <div class="summary-card"><small>积分渠道</small><strong id="channelCount">0</strong></div>
+      <div class="summary-card"><small>录入总价值</small><strong id="totalValue">¥0</strong></div>
+      <div class="summary-card"><small>30 天内失效</small><strong id="expiringCount">0</strong></div>
+    </section>
+
+    <section id="content"></section>
+  </main>
+
+  <dialog id="rewardDialog">
+    <form method="dialog" id="rewardForm">
+      <div class="modal-inner">
+        <div class="modal-head">
+          <h2 id="dialogTitle">新增积分渠道</h2>
+          <button class="icon-btn" value="cancel" aria-label="关闭">×</button>
+        </div>
+
+        <div class="form-grid">
+          <div class="field">
+            <label for="platformName">平台名称</label>
+            <input id="platformName" required placeholder="例如：京东" />
+          </div>
+          <div class="field">
+            <label for="pointsBalance">积分余额</label>
+            <input id="pointsBalance" required type="number" min="0" step="1" placeholder="例如：28460" />
+          </div>
+          <div class="field full">
+            <label for="redemptionContent">兑换内容</label>
+            <textarea id="redemptionContent" required placeholder="例如：200 元京东 E 卡"></textarea>
+          </div>
+          <div class="field">
+            <label for="monetaryValue">对应金额（元）</label>
+            <input id="monetaryValue" required type="number" min="0" step="0.01" placeholder="例如：200" />
+          </div>
+          <div class="field">
+            <label for="expirationDate">失效时间</label>
+            <input id="expirationDate" type="date" />
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn" value="cancel">取消</button>
+          <button class="btn primary" id="saveBtn" value="default">保存</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <script>
+    const STORAGE_KEY = 'points-redemption-tracker-v1';
+    const THEME_KEY = 'points-redemption-theme';
+    const emojis = ['🪙','🎟️','💳','✈️','☕️','🛍️','🎁','🏨','🚆','🍎','🌟','🐳','🎮','📚','🍀','🧧'];
+
+    let items = loadItems();
+    let editingId = null;
+    let openMenuId = null;
+
+    const content = document.getElementById('content');
+    const dialog = document.getElementById('rewardDialog');
+    const form = document.getElementById('rewardForm');
+    const addBtn = document.getElementById('addBtn');
+    const themeBtn = document.getElementById('themeBtn');
+
+    const fields = {
+      platformName: document.getElementById('platformName'),
+      pointsBalance: document.getElementById('pointsBalance'),
+      redemptionContent: document.getElementById('redemptionContent'),
+      monetaryValue: document.getElementById('monetaryValue'),
+      expirationDate: document.getElementById('expirationDate')
+    };
+
+    initTheme();
+    render();
+
+    addBtn.addEventListener('click', () => openForm());
+    themeBtn.addEventListener('click', toggleTheme);
+
+    form.addEventListener('submit', (event) => {
+      if (event.submitter?.value === 'cancel') return;
+      event.preventDefault();
+
+      const data = {
+        platformName: fields.platformName.value.trim(),
+        pointsBalance: Number(fields.pointsBalance.value),
+        redemptionContent: fields.redemptionContent.value.trim(),
+        monetaryValue: Number(fields.monetaryValue.value),
+        expirationDate: fields.expirationDate.value
+      };
+
+      if (!data.platformName || !data.redemptionContent || data.pointsBalance < 0 || data.monetaryValue < 0) return;
+
+      if (editingId) {
+        items = items.map(item => item.id === editingId ? { ...item, ...data, updatedAt: new Date().toISOString() } : item);
+      } else {
+        items.unshift({
+          id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+          emoji: emojis[Math.floor(Math.random() * emojis.length)],
+          ...data,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        });
+      }
+
+      saveItems();
+      dialog.close();
+      render();
+    });
+
+    dialog.addEventListener('close', () => {
+      editingId = null;
+      form.reset();
+    });
+
+    document.addEventListener('click', (event) => {
+      if (!event.target.closest('.menu') && !event.target.closest('.menu-toggle')) {
+        openMenuId = null;
+        render();
+      }
+    });
+
+    function openForm(item = null) {
+      editingId = item?.id || null;
+      document.getElementById('dialogTitle').textContent = item ? '编辑积分渠道' : '新增积分渠道';
+      fields.platformName.value = item?.platformName || '';
+      fields.pointsBalance.value = item?.pointsBalance ?? '';
+      fields.redemptionContent.value = item?.redemptionContent || '';
+      fields.monetaryValue.value = item?.monetaryValue ?? '';
+      fields.expirationDate.value = item?.expirationDate || '';
+      dialog.showModal();
+    }
+
+    function toggleMenu(id, event) {
+      event.stopPropagation();
+      openMenuId = openMenuId === id ? null : id;
+      render();
+    }
+
+    function editItem(id) {
+      const item = items.find(item => item.id === id);
+      openMenuId = null;
+      if (item) openForm(item);
+    }
+
+    function deleteItem(id) {
+      const item = items.find(item => item.id === id);
+      if (!item) return;
+      if (!confirm(`确定删除“${item.platformName}”吗？`)) return;
+      items = items.filter(item => item.id !== id);
+      saveItems();
+      render();
+    }
+
+    function render() {
+      updateSummary();
+
+      if (!items.length) {
+        content.innerHTML = '<div class="empty"><div style="font-size:42px;margin-bottom:12px">🪙</div><h3 style="margin:0 0 8px;color:var(--text)">还没有积分渠道</h3><div>点击“新增渠道”开始记录。</div></div>';
+        return;
+      }
+
+      content.innerHTML = `<div class="grid">${items.map(item => {
+        const status = getExpirationStatus(item.expirationDate);
+        return `
+          <article class="card">
+            <div>
+              <div class="card-top">
+                <div class="platform">
+                  <div class="emoji">${item.emoji}</div>
+                  <div class="platform-name">${escapeHtml(item.platformName)}</div>
+                </div>
+                <button class="icon-btn menu-toggle" onclick="toggleMenu('${item.id}', event)" aria-label="打开菜单">•••</button>
+                <div class="menu ${openMenuId === item.id ? 'show' : ''}">
+                  <button onclick="editItem('${item.id}')">编辑</button>
+                  <button class="delete" onclick="deleteItem('${item.id}')">删除</button>
+                </div>
+              </div>
+
+              <div class="balance-label">当前积分余额</div>
+              <div class="balance">${formatNumber(item.pointsBalance)}</div>
+            </div>
+
+            <div>
+              <div class="details">
+                <div>兑换内容：<b>${escapeHtml(item.redemptionContent)}</b></div>
+                <div>对应金额：<b>${formatCurrency(item.monetaryValue)}</b></div>
+                <div>失效时间：<b>${item.expirationDate || '未设置'}</b></div>
+              </div>
+              <div class="status ${status.className}">${status.label}</div>
+            </div>
+          </article>
+        `;
+      }).join('')}</div>`;
+    }
+
+    function updateSummary() {
+      document.getElementById('channelCount').textContent = items.length;
+      document.getElementById('totalValue').textContent = formatCurrency(items.reduce((sum, item) => sum + Number(item.monetaryValue || 0), 0));
+      document.getElementById('expiringCount').textContent = items.filter(item => {
+        const days = daysUntil(item.expirationDate);
+        return days !== null && days >= 0 && days <= 30;
+      }).length;
+    }
+
+    function getExpirationStatus(date) {
+      const days = daysUntil(date);
+      if (days === null) return { label: '未设置失效时间', className: '' };
+      if (days < 0) return { label: '已失效', className: 'danger' };
+      if (days <= 30) return { label: `${days} 天内失效`, className: 'danger' };
+      if (days <= 90) return { label: `${days} 天后失效`, className: 'warning' };
+      return { label: '状态正常', className: 'success' };
+    }
+
+    function daysUntil(date) {
+      if (!date) return null;
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      const target = new Date(`${date}T00:00:00`);
+      return Math.ceil((target - today) / 86400000);
+    }
+
+    function formatCurrency(value) {
+      return new Intl.NumberFormat('zh-CN', { style: 'currency', currency: 'CNY', maximumFractionDigits: 2 }).format(Number(value || 0));
+    }
+
+    function formatNumber(value) {
+      return new Intl.NumberFormat('zh-CN').format(Number(value || 0));
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function loadItems() {
+      try {
+        const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        return Array.isArray(data) ? data : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveItems() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    }
+
+    function initTheme() {
+      const saved = localStorage.getItem(THEME_KEY);
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.body.classList.toggle('dark', saved ? saved === 'dark' : prefersDark);
+      updateThemeButton();
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle('dark');
+      localStorage.setItem(THEME_KEY, document.body.classList.contains('dark') ? 'dark' : 'light');
+      updateThemeButton();
+    }
+
+    function updateThemeButton() {
+      themeBtn.textContent = document.body.classList.contains('dark') ? '☀️ 日间' : '🌙 夜间';
+    }
+  </script>
+</body>
+</html>
